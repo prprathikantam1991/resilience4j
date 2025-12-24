@@ -1,0 +1,109 @@
+spring:
+  application:
+    name: resilience4j-weather-service
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.pradeep.resilience4j: INFO
+    io.github.resilience4j: DEBUG
+
+# Resilience4j Configuration for Weather Service API
+# This configuration demonstrates all Resilience4j patterns applied to a simulated weather service API
+resilience4j:
+  # Circuit Breaker: Prevents cascading failures by opening circuit after failure threshold
+  # Applied to weather API calls to handle service unavailability
+  circuitbreaker:
+    instances:
+      remoteService: # Weather service instance name
+        registerHealthIndicator: true # Expose health status via Actuator
+        slidingWindowSize: 10 # Number of calls to evaluate for failure rate
+        minimumNumberOfCalls: 5 # Minimum calls before circuit can open
+        permittedNumberOfCallsInHalfOpenState: 3 # Test calls when transitioning from open to half-open
+        automaticTransitionFromOpenToHalfOpenEnabled: true # Auto-transition after wait duration
+        waitDurationInOpenState: 10s # Time to wait before attempting half-open state
+        failureRateThreshold: 50 # Percentage of failures to trigger circuit open
+        slowCallRateThreshold: 100 # Percentage of slow calls to trigger circuit open
+        slowCallDurationThreshold: 2s # Duration threshold for slow calls
+        recordExceptions: # Exceptions that count as failures
+          - java.io.IOException # Weather API service unavailable
+          - java.util.concurrent.TimeoutException # Weather API timeout
+          - java.lang.RuntimeException # Weather API internal errors
+        ignoreExceptions: [] # Exceptions to ignore (none)
+  
+  # Retry: Automatically retries failed weather API calls with exponential backoff
+  retry:
+    instances:
+      remoteService: # Weather service instance name
+        maxAttempts: 3 # Maximum retry attempts (1 initial + 2 retries)
+        waitDuration: 1s # Base wait duration between retries
+        enableExponentialBackoff: true # Use exponential backoff (1s, 2s, 4s...)
+        exponentialBackoffMultiplier: 2 # Multiplier for exponential backoff
+        retryExceptions: # Exceptions that trigger retry
+          - java.io.IOException # Transient weather API failures
+          - java.util.concurrent.TimeoutException # Transient timeouts
+        ignoreExceptions: [] # Exceptions to ignore (none)
+  
+  # Rate Limiter: Limits number of weather API calls per time period
+  # Prevents overwhelming the weather service with too many requests
+  ratelimiter:
+    instances:
+      remoteService: # Weather service instance name
+        limitForPeriod: 5 # Maximum 5 calls per period
+        limitRefreshPeriod: 5s # Period duration (5 calls per second)
+        timeoutDuration: 1s # Max wait time for permission
+        subscribeToEvents: true # Enable event publishing
+        registerHealthIndicator: true # Expose health status via Actuator
+  
+  # Bulkhead: Isolates thread pools for weather API calls
+  # Prevents resource exhaustion by limiting concurrent calls
+  bulkhead:
+    instances:
+      remoteService: # Weather service instance name
+        maxConcurrentCalls: 5 # Maximum concurrent weather API calls
+        maxWaitDuration: 1s # Max wait time when bulkhead is full
+        subscribeToEvents: true # Enable event publishing
+        registerHealthIndicator: true # Expose health status via Actuator
+  
+  # Time Limiter: Enforces maximum execution time for async weather API calls
+  timelimiter:
+    instances:
+      remoteService: # Weather service instance name
+        timeoutDuration: 3s # Maximum execution time for async operations
+        cancelRunningFuture: true # Cancel running futures on timeout
+
+# Micrometer Metrics Configuration for Weather Service
+# Exposes Resilience4j metrics via Actuator endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus # Expose metrics endpoints
+  metrics:
+    export:
+      prometheus:
+        enabled: true # Enable Prometheus metrics export
+    tags:
+      application: ${spring.application.name} # Tag metrics with application name
+  health:
+    circuitbreakers:
+      enabled: true # Include circuit breaker health in /actuator/health
+    ratelimiters:
+      enabled: true # Include rate limiter health in /actuator/health
+    bulkheads:
+      enabled: true # Include bulkhead health in /actuator/health
+
+# Available Metrics Endpoints:
+# - /actuator/health - Health status including Resilience4j components
+# - /actuator/metrics - All metrics including Resilience4j metrics
+# - /actuator/metrics/resilience4j.circuitbreaker.calls - Circuit breaker call metrics
+# - /actuator/metrics/resilience4j.retry.calls - Retry attempt metrics
+# - /actuator/metrics/resilience4j.ratelimiter.available.permissions - Rate limiter available permissions
+# - /actuator/metrics/resilience4j.ratelimiter.waiting_threads - Rate limiter waiting threads
+# - /actuator/metrics/resilience4j.bulkhead.available.concurrent.calls - Bulkhead available concurrent calls
+# - /actuator/metrics/resilience4j.bulkhead.max.allowed.concurrent.calls - Bulkhead max allowed concurrent calls
+# - /actuator/prometheus - Prometheus-formatted metrics
+# - /api/weather/metrics - Custom weather service metrics endpoint
+
