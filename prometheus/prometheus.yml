@@ -1,0 +1,35 @@
+# Prometheus configuration for Resilience4j Weather Service
+global:
+  scrape_interval: 15s      # Scrape targets every 15 seconds
+  evaluation_interval: 15s   # Evaluate rules every 15 seconds
+  external_labels:
+    cluster: 'resilience4j-weather-service'
+    environment: 'development'
+
+# Alertmanager configuration (optional - can be added later)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+
+# Load rules once and periodically evaluate them (optional)
+# rule_files:
+#   - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Scrape metrics from Spring Boot Actuator Prometheus endpoint
+  - job_name: 'resilience4j-weather-service'
+    scrape_interval: 15s
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      # For Docker: use host.docker.internal to access host machine
+      # For local: use localhost
+      - targets: ['host.docker.internal:8080']
+        labels:
+          application: 'resilience4j-weather-service'
+          service: 'weather-api'
+    # Optional: Add basic auth if needed
+    # basic_auth:
+    #   username: 'user'
+    #   password: 'pass'

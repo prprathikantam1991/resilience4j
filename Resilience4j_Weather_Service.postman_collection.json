@@ -1,0 +1,754 @@
+{
+	"info": {
+		"_postman_id": "resilience4j-weather-service",
+		"name": "Resilience4j Weather Service API",
+		"description": "Complete Postman collection for Resilience4j Weather Service demonstrating Circuit Breaker, Retry, Rate Limiter, Bulkhead, and Time Limiter patterns",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Circuit Breaker",
+			"item": [
+				{
+					"name": "Circuit Breaker - Success (Real API)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Boston\",\n  \"state\": \"Massachusetts\",\n  \"country\": \"US\",\n  \"units\": \"C\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/circuit-breaker",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "circuit-breaker"]
+						},
+						"description": "Tests Circuit Breaker with successful weather API call using real Open-Meteo APIs"
+					}
+				},
+				{
+					"name": "Circuit Breaker - Failure (Trigger Fallback)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Boston\",\n  \"state\": \"Massachusetts\",\n  \"country\": \"US\",\n  \"units\": \"C\",\n  \"scenario\": \"failure\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/circuit-breaker",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "circuit-breaker"]
+						},
+						"description": "Tests Circuit Breaker with failure scenario. Send this request 6+ times to see circuit open (after 5 failures)"
+					}
+				},
+				{
+					"name": "Circuit Breaker - Random Failures",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"New York\",\n  \"state\": \"New York\",\n  \"country\": \"US\",\n  \"units\": \"F\",\n  \"scenario\": \"random\",\n  \"failureProbability\": 0.5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/circuit-breaker",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "circuit-breaker"]
+						},
+						"description": "Tests Circuit Breaker with random failures (50% probability)"
+					}
+				}
+			],
+			"description": "Circuit Breaker pattern - Opens circuit after failure threshold (5 failures with 50% failure rate)"
+		},
+		{
+			"name": "2. Retry",
+			"item": [
+				{
+					"name": "Retry - Success",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"London\",\n  \"country\": \"UK\",\n  \"units\": \"C\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/retry",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "retry"]
+						},
+						"description": "Tests Retry pattern with successful call"
+					}
+				},
+				{
+					"name": "Retry - Failure (Will Retry 3 Times)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Paris\",\n  \"country\": \"France\",\n  \"units\": \"C\",\n  \"scenario\": \"failure\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/retry",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "retry"]
+						},
+						"description": "Tests Retry pattern - will retry up to 3 times with exponential backoff (1s, 2s, 4s)"
+					}
+				},
+				{
+					"name": "Retry - Random (Transient Failures)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Tokyo\",\n  \"country\": \"Japan\",\n  \"units\": \"C\",\n  \"scenario\": \"random\",\n  \"failureProbability\": 0.3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/retry",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "retry"]
+						},
+						"description": "Tests Retry with random transient failures (30% probability)"
+					}
+				}
+			],
+			"description": "Retry pattern - Automatically retries failed calls up to 3 times with exponential backoff"
+		},
+		{
+			"name": "3. Rate Limiter",
+			"item": [
+				{
+					"name": "Rate Limiter - Success",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Sydney\",\n  \"country\": \"Australia\",\n  \"units\": \"C\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/rate-limiter",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "rate-limiter"]
+						},
+						"description": "Tests Rate Limiter with successful call"
+					}
+				},
+				{
+					"name": "Rate Limiter - Hit Rate Limit (Send 6+ Rapid Requests)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Berlin\",\n  \"country\": \"Germany\",\n  \"units\": \"C\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/rate-limiter",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "rate-limiter"]
+						},
+						"description": "Send this request 6+ times rapidly (within 1 second) to hit rate limit (5 calls/second). Requests beyond limit will get fallback response."
+					}
+				}
+			],
+			"description": "Rate Limiter pattern - Limits to 5 calls per second"
+		},
+		{
+			"name": "4. Bulkhead",
+			"item": [
+				{
+					"name": "Bulkhead - Success",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Mumbai\",\n  \"country\": \"India\",\n  \"units\": \"C\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/bulkhead",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "bulkhead"]
+						},
+						"description": "Tests Bulkhead pattern with successful call"
+					}
+				},
+				{
+					"name": "Bulkhead - Hit Concurrent Limit (Send 6+ Concurrent Requests)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Dubai\",\n  \"country\": \"UAE\",\n  \"units\": \"C\",\n  \"scenario\": \"slow\",\n  \"delayMs\": 2000\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/bulkhead",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "bulkhead"]
+						},
+						"description": "Send 6+ concurrent requests to hit bulkhead limit (max 5 concurrent calls). Requests beyond limit will get fallback response."
+					}
+				}
+			],
+			"description": "Bulkhead pattern - Limits to 5 concurrent calls"
+		},
+		{
+			"name": "5. Time Limiter",
+			"item": [
+				{
+					"name": "Time Limiter - Success",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Singapore\",\n  \"country\": \"Singapore\",\n  \"units\": \"C\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/time-limiter",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "time-limiter"]
+						},
+						"description": "Tests Time Limiter with successful call (completes within 3s timeout)"
+					}
+				},
+				{
+					"name": "Time Limiter - Timeout (Slow Response)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Bangkok\",\n  \"country\": \"Thailand\",\n  \"units\": \"C\",\n  \"scenario\": \"slow\",\n  \"delayMs\": 4000\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/time-limiter",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "time-limiter"]
+						},
+						"description": "Tests Time Limiter with slow response (4s delay exceeds 3s timeout) - will trigger fallback"
+					}
+				},
+				{
+					"name": "Time Limiter - Timeout Scenario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Seoul\",\n  \"country\": \"South Korea\",\n  \"units\": \"C\",\n  \"scenario\": \"timeout\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/time-limiter",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "time-limiter"]
+						},
+						"description": "Tests Time Limiter with timeout scenario - will trigger fallback"
+					}
+				}
+			],
+			"description": "Time Limiter pattern - Enforces 3 second timeout for async operations"
+		},
+		{
+			"name": "6. Combined Patterns",
+			"item": [
+				{
+					"name": "Combined - Circuit Breaker + Retry - Success",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Toronto\",\n  \"state\": \"Ontario\",\n  \"country\": \"Canada\",\n  \"units\": \"C\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/combined",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "combined"]
+						},
+						"description": "Tests Circuit Breaker + Retry combined with successful call"
+					}
+				},
+				{
+					"name": "Combined - Circuit Breaker + Retry - Failure",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Vancouver\",\n  \"state\": \"British Columbia\",\n  \"country\": \"Canada\",\n  \"units\": \"C\",\n  \"scenario\": \"failure\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/combined",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "combined"]
+						},
+						"description": "Tests Circuit Breaker + Retry with failure - Retry will attempt 3 times, then Circuit Breaker records failure"
+					}
+				}
+			],
+			"description": "Combined Circuit Breaker + Retry patterns"
+		},
+		{
+			"name": "7. All Patterns Combined",
+			"item": [
+				{
+					"name": "All Patterns - Success",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Melbourne\",\n  \"country\": \"Australia\",\n  \"units\": \"C\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/all-patterns",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "all-patterns"]
+						},
+						"description": "Tests all Resilience4j patterns combined: Circuit Breaker + Retry + Rate Limiter + Bulkhead"
+					}
+				},
+				{
+					"name": "All Patterns - Failure",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Perth\",\n  \"country\": \"Australia\",\n  \"units\": \"C\",\n  \"scenario\": \"failure\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/all-patterns",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "all-patterns"]
+						},
+						"description": "Tests all patterns with failure scenario"
+					}
+				}
+			],
+			"description": "All Resilience4j patterns combined: Circuit Breaker + Retry + Rate Limiter + Bulkhead"
+		},
+		{
+			"name": "8. Simple Weather Lookup",
+			"item": [
+				{
+					"name": "Get Weather - Boston (Real API)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/weather?city=Boston&state=Massachusetts&country=US&units=C",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather"],
+							"query": [
+								{
+									"key": "city",
+									"value": "Boston"
+								},
+								{
+									"key": "state",
+									"value": "Massachusetts"
+								},
+								{
+									"key": "country",
+									"value": "US"
+								},
+								{
+									"key": "units",
+									"value": "C"
+								}
+							]
+						},
+						"description": "Simple GET request to fetch weather using all Resilience4j patterns with real Open-Meteo API"
+					}
+				},
+				{
+					"name": "Get Weather - London (Real API)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/weather?city=London&country=UK&units=C",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather"],
+							"query": [
+								{
+									"key": "city",
+									"value": "London"
+								},
+								{
+									"key": "country",
+									"value": "UK"
+								},
+								{
+									"key": "units",
+									"value": "C"
+								}
+							]
+						},
+						"description": "Simple GET request for London weather"
+					}
+				},
+				{
+					"name": "Get Weather - Tokyo (Real API)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/weather?city=Tokyo&country=Japan&units=C",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather"],
+							"query": [
+								{
+									"key": "city",
+									"value": "Tokyo"
+								},
+								{
+									"key": "country",
+									"value": "Japan"
+								},
+								{
+									"key": "units",
+									"value": "C"
+								}
+							]
+						},
+						"description": "Simple GET request for Tokyo weather"
+					}
+				}
+			],
+			"description": "Simple GET endpoint using all Resilience4j patterns with real weather API"
+		},
+		{
+			"name": "9. Test Scenarios",
+			"item": [
+				{
+					"name": "Test Success Scenario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Chicago\",\n  \"state\": \"Illinois\",\n  \"country\": \"US\",\n  \"units\": \"F\",\n  \"scenario\": \"success\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/success",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "success"]
+						},
+						"description": "Tests successful weather API call scenario"
+					}
+				},
+				{
+					"name": "Test Failure Scenario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Miami\",\n  \"state\": \"Florida\",\n  \"country\": \"US\",\n  \"units\": \"F\",\n  \"scenario\": \"failure\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/failure",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "failure"]
+						},
+						"description": "Tests failure scenario to trigger resilience patterns"
+					}
+				},
+				{
+					"name": "Test Timeout Scenario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Seattle\",\n  \"state\": \"Washington\",\n  \"country\": \"US\",\n  \"units\": \"F\",\n  \"scenario\": \"timeout\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/timeout",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "timeout"]
+						},
+						"description": "Tests timeout scenario"
+					}
+				},
+				{
+					"name": "Test Slow Response Scenario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"city\": \"Portland\",\n  \"state\": \"Oregon\",\n  \"country\": \"US\",\n  \"units\": \"F\",\n  \"scenario\": \"slow\",\n  \"delayMs\": 4000\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/slow",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "slow"]
+						},
+						"description": "Tests slow response scenario (4 second delay)"
+					}
+				}
+			],
+			"description": "Test scenarios for different failure modes"
+		},
+		{
+			"name": "10. Metrics & Monitoring",
+			"item": [
+				{
+					"name": "Get Resilience4j Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/weather/metrics",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "weather", "metrics"]
+						},
+						"description": "Retrieves all Resilience4j metrics: Circuit Breaker state, Retry attempts, Rate Limiter permits, Bulkhead capacity, etc."
+					}
+				},
+				{
+					"name": "Actuator Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "health"]
+						},
+						"description": "Spring Boot Actuator health endpoint including Resilience4j component health"
+					}
+				},
+				{
+					"name": "Actuator Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "metrics"]
+						},
+						"description": "Spring Boot Actuator metrics endpoint - lists all available metrics"
+					}
+				},
+				{
+					"name": "Circuit Breaker Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/resilience4j.circuitbreaker.calls",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "metrics", "resilience4j.circuitbreaker.calls"]
+						},
+						"description": "Circuit Breaker specific metrics from Actuator"
+					}
+				},
+				{
+					"name": "Retry Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/resilience4j.retry.calls",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "metrics", "resilience4j.retry.calls"]
+						},
+						"description": "Retry specific metrics from Actuator"
+					}
+				},
+				{
+					"name": "Rate Limiter Available Permissions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/resilience4j.ratelimiter.available.permissions",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "metrics", "resilience4j.ratelimiter.available.permissions"]
+						},
+						"description": "Rate Limiter available permissions metric from Actuator"
+					}
+				},
+				{
+					"name": "Rate Limiter Waiting Threads",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/resilience4j.ratelimiter.waiting_threads",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "metrics", "resilience4j.ratelimiter.waiting_threads"]
+						},
+						"description": "Rate Limiter waiting threads metric from Actuator"
+					}
+				},
+				{
+					"name": "Bulkhead Available Concurrent Calls",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/resilience4j.bulkhead.available.concurrent.calls",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "metrics", "resilience4j.bulkhead.available.concurrent.calls"]
+						},
+						"description": "Bulkhead available concurrent calls metric from Actuator"
+					}
+				},
+				{
+					"name": "Bulkhead Max Allowed Concurrent Calls",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/resilience4j.bulkhead.max.allowed.concurrent.calls",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "metrics", "resilience4j.bulkhead.max.allowed.concurrent.calls"]
+						},
+						"description": "Bulkhead max allowed concurrent calls metric from Actuator"
+					}
+				},
+				{
+					"name": "Prometheus Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/prometheus",
+							"host": ["{{baseUrl}}"],
+							"path": ["actuator", "prometheus"]
+						},
+						"description": "Prometheus-formatted metrics for monitoring systems"
+					}
+				}
+			],
+			"description": "Metrics and monitoring endpoints"
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
